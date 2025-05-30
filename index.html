@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotAlias - Secure Gmail Alias Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Generate secure and unique Gmail aliases with dot variations. Protect your primary email address from spam and enhance your online privacy.">
+    <meta name="keywords" content="gmail alias, dot alias, email security, email privacy, alias generator, secure email">
+    <meta name="author" content="Alxpace.in">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            transition: background-color 0.3s;
+        }
+        .dark body {
+            background-color: #111827;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+        .alias-card {
+            transition: all 0.2s ease;
+        }
+        .alias-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .dark .alias-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        #aliasContainer {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #e5e7eb;
+        }
+        .dark .progress-bar {
+            background-color: #374151;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #0ea5e9;
+            transition: width 0.3s ease;
+        }
+        .pagination-btn {
+            min-width: 2.5rem;
+        }
+    </style>
+</head>
+<body class="h-full dark:bg-gray-900">
+    <div class="min-h-full flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm dark:bg-gray-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <i class="fas fa-envelope text-primary-600 text-2xl mr-2 dark:text-primary-400"></i>
+                            <span class="font-bold text-xl text-gray-800 dark:text-white">DotAlias</span>
+                        </div>
+                        <nav class="hidden md:ml-6 md:flex md:space-x-8">
+                            <a href="#" class="text-primary-600 border-b-2 border-primary-500 px-1 pt-1 text-sm font-medium dark:text-primary-400">Dashboard</a>
+                            <a href="#" class="text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 border-transparent px-1 pt-1 text-sm font-medium dark:text-gray-400 dark:hover:text-gray-300">Settings</a>
+                            <a href="#" class="text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 border-transparent px-1 pt-1 text-sm font-medium dark:text-gray-400 dark:hover:text-gray-300">Help</a>
+                        </nav>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="mr-4 flex items-center">
+                            <span class="mr-2 text-sm text-gray-700 dark:text-gray-300">Light</span>
+                            <button id="themeToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-700">
+                                <span class="sr-only">Toggle dark mode</span>
+                                <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out dark:translate-x-5"></span>
+                            </button>
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Dark</span>
+                        </div>
+                        <div class="ml-3 relative">
+                            <div class="flex items-center">
+                                <div>
+                                    <button class="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800">
+                                        <span class="sr-only">Open user menu</span>
+                                        <div class="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-medium">U</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="dashboard-grid">
+                    <!-- Sidebar -->
+                    <aside class="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Alias Management</h2>
+                        
+                        <div class="mb-6">
+                            <label for="primaryEmail" class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Primary Email</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="email" id="primaryEmail" class="py-2 px-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="yourname@gmail.com" value="user@gmail.com">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Gmail will deliver all dot variations to your inbox</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Alias Quantity</label>
+                            <div class="flex items-center space-x-2">
+                                <button id="decreaseQuantity" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="aliasQuantity" value="100" min="100" max="5000" class="py-2 px-3 w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <button id="increaseQuantity" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Choose how many aliases to generate (max 2000)</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Rotation Frequency</label>
+                            <select id="rotationFrequency" class="py-2 px-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="none">No Rotation</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex flex-col space-y-3">
+                            <button id="generateBtn" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Generate Aliases
+                            </button>
+                            <button id="exportBtn" class="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                <i class="fas fa-file-export mr-2"></i> Export CSV
+                            </button>
+                            <button id="refreshBtn" class="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                <i class="fas fa-sync-alt mr-2"></i> Refresh Aliases
+                            </button>
+                        </div>
+                        
+                        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <h3 class="text-sm font-medium text-gray-900 mb-2 dark:text-white">Security Status</h3>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Encryption Active</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-ban text-yellow-500 mr-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">No Spam Detected</span>
+                            </div>
+                        </div>
+                    </aside>
+                    
+                    <!-- Dashboard -->
+                    <div class="bg-white rounded-lg shadow dark:bg-gray-800">
+                        <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Generated Aliases</h2>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">All emails sent to these aliases will be delivered to your primary inbox</p>
+                        </div>
+                        
+                        <!-- Progress bar -->
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Generated</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300"><span id="generatedCount">0</span>/<span id="totalCount">2000</span></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill w-0"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="px-6 py-4 flex flex-wrap items-center justify-between border-b border-gray-200 dark:border-gray-700">
+                            <div class="relative w-full sm:w-auto mb-4 sm:mb-0">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="searchInput" class="py-2 pl-10 pr-4 block w-full sm:w-64 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search aliases...">
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label for="itemsPerPage" class="text-sm text-gray-700 mr-2 dark:text-gray-300">Per page:</label>
+                                    <select id="itemsPerPage" class="py-1.5 pl-2 pr-8 block rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div class="flex space-x-1">
+                                    <button class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                        <i class="fas fa-th-list"></i>
+                                    </button>
+                                    <button class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                        <i class="fas fa-th-large"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alias Container -->
+                        <div id="aliasContainer" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Aliases will be dynamically inserted here -->
+                            
+                            <!-- Empty state -->
+                            <div id="emptyState" class="col-span-full py-12 text-center">
+                                <div class="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                    <i class="fas fa-envelope-open-text text-4xl text-gray-400"></i>
+                                </div>
+                                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No aliases generated</h3>
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Enter your primary email and click "Generate Aliases" to get started</p>
+                                <div class="mt-6">
+                                    <button id="startGenerateBtn" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        Generate Aliases
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700">
+                            <div class="text-sm text-gray-700 dark:text-gray-300">
+                                Showing <span id="currentPageStart">0</span> to <span id="currentPageEnd">0</span> of <span id="totalItems">0</span> aliases
+                            </div>
+                            <div class="flex space-x-2" id="paginationControls">
+                                <button id="prevPageBtn" class="py-1.5 px-3 rounded-md bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                    Previous
+                                </button>
+                                <div id="pageNumbers" class="flex space-x-1"></div>
+                                <button id="nextPageBtn" class="py-1.5 px-3 rounded-md bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="md:flex md:items-center md:justify-between">
+                    <div class="flex justify-center md:justify-start space-x-6">
+                        <a href="https://github.com/rahul-sharma-alx" class="text-gray-400 hover:text-gray-500">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/sharma-rahul-alx/" class="text-gray-400 hover:text-gray-500">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://discordapp.com/users/1206274393739759666" class="text-gray-400 hover:text-gray-500">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                    </div>
+                    <div class="mt-4 md:mt-0 md:order-1">
+                        <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                            &copy; 2023 DotAlias. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const generateBtn = document.getElementById('generateBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const startGenerateBtn = document.getElementById('startGenerateBtn');
+        const primaryEmailInput = document.getElementById('primaryEmail');
+        const aliasQuantityInput = document.getElementById('aliasQuantity');
+        const increaseBtn = document.getElementById('increaseQuantity');
+        const decreaseBtn = document.getElementById('decreaseQuantity');
+        const aliasContainer = document.getElementById('aliasContainer');
+        const emptyState = document.getElementById('emptyState');
+        const generatedCount = document.getElementById('generatedCount');
+        const totalCount = document.getElementById('totalCount');
+        const progressFill = document.getElementById('progressFill');
+        const searchInput = document.getElementById('searchInput');
+        const itemsPerPageSelect = document.getElementById('itemsPerPage');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageNumbers = document.getElementById('pageNumbers');
+        const currentPageStart = document.getElementById('currentPageStart');
+        const currentPageEnd = document.getElementById('currentPageEnd');
+        const totalItems = document.getElementById('totalItems');
+
+        // State
+        let aliases = [];
+        let filteredAliases = [];
+        let isGenerating = false;
+        let generationProgress = 0;
+        let generationInterval;
+        let currentPage = 1;
+        let itemsPerPage = 50;
+        let totalPages = 1;
+        
+        // Initialize dark mode based on preference
+        function initTheme() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true' || 
+                              (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDarkMode);
+        }
+        
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark);
+        });
+        
+        // Initialize theme
+        initTheme();
+        
+        // Generate a dot-based alias
+        function generateDotAlias(email) {
+            if (!email) return null;
+            
+            const [localPart, domain] = email.split('@');
+            if (!localPart || !domain) return null;
+            
+            // Remove existing dots from local part
+            const baseLocal = localPart.replace(/\./g, '');
+            
+            // Generate a random pattern of dots
+            const positions = baseLocal.length - 1;
+            let newLocal = baseLocal[0];
+            
+            // Insert dots randomly (at least one dot, max positions)
+            for (let i = 1; i < baseLocal.length; i++) {
+                if (Math.random() > 0.7 && i < baseLocal.length - 1) {
+                    newLocal += '.';
+                }
+                newLocal += baseLocal[i];
+            }
+            
+            return `${newLocal}@${domain}`;
+        }
+        
+        // Generate multiple aliases with progress simulation
+        function generateAliases(count, email) {
+            if (isGenerating) return;
+            
+            aliases = [];
+            filteredAliases = [];
+            aliasContainer.innerHTML = '';
+            emptyState.style.display = 'none';
+            
+            isGenerating = true;
+            generationProgress = 0;
+            updateProgress();
+            
+            // Simulate generating large number of aliases with progress
+            generationInterval = setInterval(() => {
+                if (generationProgress >= count) {
+                    clearInterval(generationInterval);
+                    isGenerating = false;
+                    
+                    // Update pagination
+                    filteredAliases = [...aliases];
+                    updatePagination();
+                    return;
+                }
+                
+                const alias = generateDotAlias(email);
+                if (alias) {
+                    aliases.push(alias);
+                    generationProgress++;
+                    
+                    // Update progress every 50 aliases for performance
+                    if (generationProgress % 50 === 0 || generationProgress === count) {
+                        updateProgress();
+                    }
+                }
+            }, 1); // Fast generation for demo
+        }
+        
+        // Update progress display
+        function updateProgress() {
+            generatedCount.textContent = generationProgress;
+            totalCount.textContent = aliasQuantityInput.value;
+            progressFill.style.width = `${(generationProgress / aliasQuantityInput.value) * 100}%`;
+        }
+        
+        // Render aliases for current page
+        function renderAliases() {
+            if (filteredAliases.length === 0) {
+                aliasContainer.innerHTML = '<div class="col-span-full py-12 text-center"><p class="text-gray-500 dark:text-gray-400">No aliases match your search</p></div>';
+                return;
+            }
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredAliases.length);
+            const aliasesToShow = filteredAliases.slice(startIndex, endIndex);
+            
+            aliasContainer.innerHTML = aliasesToShow.map(alias => `
+                <div class="alias-card bg-white border border-gray-200 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <i class="fas fa-envelope text-primary-500"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-gray-900 break-all dark:text-white">${alias}</p>
+                            <div class="mt-2 flex items-center text-xs">
+                                <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded dark:bg-green-900 dark:text-green-200">Active</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">Just now</span>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <button class="ml-2 p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600" title="Click to copy" onclick="copyToClipboard(this, '${alias}')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update pagination info
+            currentPageStart.textContent = startIndex + 1;
+            currentPageEnd.textContent = endIndex;
+            totalItems.textContent = filteredAliases.length;
+        }
+        
+        // Update pagination controls
+        function updatePagination() {
+            // Calculate total pages
+            totalPages = Math.ceil(filteredAliases.length / itemsPerPage);
+            
+            // Reset current page if it's beyond the new total
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+            
+            // Update button states
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+            
+            // Clear existing page numbers
+            pageNumbers.innerHTML = '';
+            
+            // Create page number buttons
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            
+            if (endPage - startPage < maxButtons - 1) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = `pagination-btn py-1.5 px-3 rounded-md text-sm font-medium ${
+                    i === currentPage 
+                        ? 'bg-primary-600 text-white' 
+                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600'
+                }`;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderAliases();
+                    updatePagination();
+                });
+                pageNumbers.appendChild(pageBtn);
+            }
+            
+            // Render aliases for current page
+            renderAliases();
+        }
+        
+        // Export to CSV
+        function exportToCSV() {
+            if (aliases.length === 0) {
+                alert('No aliases to export. Please generate aliases first.');
+                return;
+            }
+            
+            // Create CSV content
+            let csvContent = "data:text/csv;charset=utf-8,Alias Email\n";
+            aliases.forEach(alias => {
+                csvContent += alias + "\n";
+            });
+            
+            // Create download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "email_aliases.csv");
+            document.body.appendChild(link);
+            
+            // Trigger download
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show success message
+                const tooltip = document.createElement('div');
+                tooltip.textContent = 'Copied!';
+                tooltip.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg';
+                document.body.appendChild(tooltip);
+
+                 // Change icon to check
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-copy');
+                    icon.classList.add('fa-check');
+                }
+                btn.title = "Copied!";
+                
+                setTimeout(() => {
+                    document.body.removeChild(tooltip);
+                    if (icon) {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-copy');
+                    }
+                    btn.title = "Click to copy";
+                }, 2000);
+            });
+        }
+        
+        // Event Listeners
+        generateBtn.addEventListener('click', () => {
+            const email = primaryEmailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            generateAliases(parseInt(aliasQuantityInput.value), email);
+        });
+        
+        startGenerateBtn.addEventListener('click', () => {
+            const email = primaryEmailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            generateAliases(parseInt(aliasQuantityInput.value), email);
+        });
+        
+        exportBtn.addEventListener('click', exportToCSV);
+        
+        refreshBtn.addEventListener('click', () => {
+            if (aliases.length === 0) {
+                alert('No aliases to refresh. Please generate aliases first.');
+                return;
+            }
+            
+            const email = primaryEmailInput.value.trim();
+            generateAliases(parseInt(aliasQuantityInput.value), email);
+        });
+        
+        increaseBtn.addEventListener('click', () => {
+            let value = parseInt(aliasQuantityInput.value);
+            if (value < 5000) {
+                aliasQuantityInput.value = value + 100;
+            }
+        });
+        
+        decreaseBtn.addEventListener('click', () => {
+            let value = parseInt(aliasQuantityInput.value);
+            if (value > 100) {
+                aliasQuantityInput.value = value - 100;
+            }
+        });
+        
+        // Search functionality
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredAliases = [...aliases];
+            } else {
+                filteredAliases = aliases.filter(alias => 
+                    alias.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            currentPage = 1;
+            updatePagination();
+        });
+        
+        // Pagination controls
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderAliases();
+                updatePagination();
+            }
+        });
+        
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderAliases();
+                updatePagination();
+            }
+        });
+        
+        // Items per page change
+        itemsPerPageSelect.addEventListener('change', () => {
+            itemsPerPage = parseInt(itemsPerPageSelect.value);
+            currentPage = 1;
+            updatePagination();
+        });
+        
+        // Initialize empty state
+        emptyState.style.display = 'block';
+    </script>
+</body>
+</html>
