@@ -3,6 +3,11 @@ Generate secure and unique Gmail aliases with dot variations. Protect your prima
 DotAlias is a project designed to simplify and enhance your workflow by managing aliases efficiently. This repository provides tools and documentation to help you set up and use DotAlias seamlessly.
 
 ## 🚀 Live Preview
+<p align="center">
+  <a href="https://rahul-sharma-alx.github.io/DotAlias/" target="_blank">
+    <img src="screenshot.png" alt="DotAlias App Preview" style="max-width: 100%; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); margin: 24px 0;"/>
+  </a>
+</p>
 
 You can preview the project here: [DotAlias Live Preview](https://rahul-sharma-alx.github.io/DotAlias/)
 
